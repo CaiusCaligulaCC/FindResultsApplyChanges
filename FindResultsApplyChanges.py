@@ -1,6 +1,7 @@
 # coding=utf8
 import sublime, sublime_plugin
 import re, os
+from .chardet.universaldetector import UniversalDetector
 
 debug = False
 
@@ -79,7 +80,22 @@ class FindResultsApplyChangesCommand(sublime_plugin.WindowCommand):
 			for f in changes:
 				f = f.strip();
 				if f and changes[f] and os.path.exists(f):
-					content = self.read(f).split('\n');
+					try:
+						content = self.read(f).split('\n')
+					except Exception as e:
+						try:
+							self.convert(f)
+						except Exception as e:
+							sublime.message_dialog(
+								'Error converting file %s' % f
+							)
+							raise e
+						try:
+							# try to read again
+							content = self.read(f).split('\n')
+						except Exception as e:
+							sublime.message_dialog('Error reading file %s:\n could not read encoding!' % f)
+							raise e
 					modified = False
 					for k in changes[f].keys():
 						k = int(k)
@@ -104,3 +120,29 @@ class FindResultsApplyChangesCommand(sublime_plugin.WindowCommand):
 
 	def write(self, f, c):
 		open(f, 'w+', encoding='utf8', newline='').write(str(c))
+
+	def convert(self, file):
+		sublime.message_dialog('Converting file %s' % file)
+		detector = UniversalDetector()
+		fp = open(file, 'rb')
+		detector.feed(fp.read())
+		fp.close()
+		detector.close()
+		if not detector.done:
+			raise Exception('Could not guess the encoding of file %s' % file)
+		encoding = str(detector.result['encoding']).upper()
+		confidence = detector.result['confidence']
+		print('Detected encoding %s with confidence %s'
+			% (encoding, confidence)
+		)
+		del detector
+		if confidence < 0.5:
+			raise Exception('Could not guess the encoding of file %s, not ' +
+				'confident enough' % file)
+		else:
+			content = open(
+				file, 'r', encoding=encoding, errors='strict'
+			).read()
+			content.encode('utf-8')
+			self.write(file, content)
+

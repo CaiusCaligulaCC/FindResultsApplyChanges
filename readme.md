@@ -1,4 +1,5 @@
-**[Sublime Text 3+](http://www.sublimetext.com/) Package**. Install via an updated version of  [Package Control 2+](https://sublime.wbond.net/installation). Just **DON'T** install manually.
+Original package can be installed via **[Sublime Text 3+](http://www.sublimetext.com/) Package**. Install via an updated version of  [Package Control 2+](https://sublime.wbond.net/installation).
+This has to be installed manually by placing the folder into Packages/.
 
 # Find Results Apply Changes
 
@@ -21,9 +22,9 @@ Apply any change you made to a "Find Results" buffer back to the files. ie:
 - Hook CTRL/CMD+S to apply the changes (how to?)
 - Double click in these lines with numbers and a colon will open the file, default ST behaviour(how to disable it?)
 
-## WONTFIX
+## Encoding
 
-- Will write/read UTF8 files, if you have a file in another encoding, considering jumping to the U8 world. :)
+If encoding is different, tries to convert the encoding of a non-utf-8-file to utf-8 first and then apply the changes again.
 
 ## Source-code
 
